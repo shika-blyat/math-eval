@@ -3,6 +3,7 @@ use std::ops::Range;
 pub enum TokenKind {
     Op(Op),
     Num(isize),
+    EOF,
 }
 #[derive(Debug)]
 pub struct Token {

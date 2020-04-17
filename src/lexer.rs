@@ -18,64 +18,85 @@ impl Lexer {
             error: None,
         }
     }
-    fn next_token(&mut self) -> Option<Token> {
+    pub fn parse(mut self) -> Result<Vec<Token>, Error> {
+        let mut tokens = vec![];
+        loop {
+            match self.next_token()? {
+                tok
+                @
+                Token {
+                    kind: TokenKind::EOF,
+                    ..
+                } => {
+                    tokens.push(tok);
+                    return Ok(tokens);
+                }
+                tok => tokens.push(tok),
+            }
+        }
+    }
+    fn next_token(&mut self) -> Result<Token, Error> {
         while !self.is_empty() {
             let curr_c = self.curr_c();
             if curr_c.is_ascii_digit() {
-                return Some(self.num());
+                return Ok(self.num());
             } else if curr_c.is_whitespace() {
                 if curr_c == '\n' {
                     self.line += 1;
-                    self.char_ = 1;
-                } else {
-                    self.char_ += 1;
+                    // self.advance() call will add one to `char_`
+                    self.char_ = 0;
                 }
                 self.advance();
                 continue;
             }
             let tok = match curr_c {
-                '+' => Some(self.new_token(
+                '+' => self.new_token(
                     TokenKind::Op(Op {
                         kind: OpKind::Add,
                         prec: 5,
                     }),
                     '+'.to_string(),
-                )),
-                '-' => Some(self.new_token(
+                ),
+                '-' => self.new_token(
                     TokenKind::Op(Op {
                         kind: OpKind::Sub,
                         prec: 5,
                     }),
                     '-'.to_string(),
-                )),
-                '*' => Some(self.new_token(
+                ),
+                '*' => self.new_token(
                     TokenKind::Op(Op {
                         kind: OpKind::Mul,
                         prec: 10,
                     }),
                     '*'.to_string(),
-                )),
-                '/' => Some(self.new_token(
+                ),
+                '/' => self.new_token(
                     TokenKind::Op(Op {
                         kind: OpKind::Div,
                         prec: 10,
                     }),
                     '/'.to_string(),
-                )),
+                ),
                 c => {
-                    self.error = Some(Error {
+                    return Err(Error {
                         reason: ErrorReason::UnexpectedChar(c),
                         line: self.line,
                         char_: self.char_,
                         range: 0..1,
                     });
-                    None
                 }
             };
             self.advance();
-            return tok;
+            return Ok(tok);
         }
-        None
+        Ok(Token {
+            kind: TokenKind::EOF,
+            line: self.line,
+            char_: self.char_,
+            range: 0..0,
+            lexeme: "".to_string(),
+        })
     }
     fn num(&mut self) -> Token {
         let mut num = self.curr_c().to_string();
@@ -92,40 +113,28 @@ impl Lexer {
         Token {
             kind: TokenKind::Num(num.clone().parse().unwrap()),
             line: self.line,
-            char_: self.char_,
+            char_: self.char_ - num.len(),
             range: self.current - num.len()..self.current,
             lexeme: num,
         }
-    }
-    pub fn contains_err(&self) -> bool {
-        self.error.is_some()
     }
     fn new_token<S: Into<String>>(&self, kind: TokenKind, lexeme: S) -> Token {
         Token {
             kind,
             line: self.line,
-            char_: self.char_,
+            char_: self.char_ - 1,
             lexeme: lexeme.into(),
             range: self.current - 1..self.current,
         }
     }
-    pub fn is_empty(&self) -> bool {
+    fn is_empty(&self) -> bool {
         self.current >= self.chars.len()
     }
     fn advance(&mut self) {
+        self.char_ += 1;
         self.current += 1;
     }
     fn curr_c(&mut self) -> char {
         self.chars[self.current]
-    }
-}
-
-impl Iterator for Lexer {
-    type Item = (Token, Option<Error>);
-    fn next(&mut self) -> Option<(Token, Option<Error>)> {
-        match self.next_token() {
-            Some(tok) => Some((tok, self.error.clone())),
-            None => None,
-        }
     }
 }

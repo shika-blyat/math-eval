@@ -11,22 +11,26 @@ pub fn shunting_yard(tokens: Vec<Token>) -> Result<Expr, Error> {
     }
     let mut op_stack: Vec<Op> = vec![];
     let mut output_stack = vec![];
-    let mut ast;
+    let mut ast = None;
     for tok in tokens {
         match tok.kind {
             TokenKind::Num(val) => output_stack.push(val),
             TokenKind::Op(op) => {
                 while let Some(last_op) = op_stack.last() {
                     if last_op.prec >= op.prec {
-                        ast = Expr::BinOp {
+                        ast = Some(Expr::BinOp {
                             left: Box::new(Expr::Val(Lit::Num(output_stack.pop().unwrap()))),
                             op: op_stack.pop().unwrap(),
                             right: Box::new(Expr::Val(Lit::Num(output_stack.pop().unwrap()))),
-                        }
+                        });
+                    } else {
+                        break;
                     }
                 }
+                op_stack.push(op);
             }
+            TokenKind::EOF => (),
         }
     }
-    Ok(ast)
+    Ok(ast.unwrap())
 }
