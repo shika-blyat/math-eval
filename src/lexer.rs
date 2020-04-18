@@ -78,6 +78,8 @@ impl Lexer {
                     }),
                     '/'.to_string(),
                 ),
+                '(' => self.new_token(TokenKind::LParen, '('.to_string()),
+                ')' => self.new_token(TokenKind::RParen, ')'.to_string()),
                 c => {
                     return Err(Error {
                         reason: ErrorReason::UnexpectedChar(c),
@@ -124,7 +126,7 @@ impl Lexer {
             line: self.line,
             char_: self.char_ - 1,
             lexeme: lexeme.into(),
-            range: self.current - 1..self.current,
+            range: self.current..self.current + 1,
         }
     }
     fn is_empty(&self) -> bool {

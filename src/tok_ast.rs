@@ -1,11 +1,13 @@
 use std::ops::Range;
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum TokenKind {
     Op(Op),
     Num(isize),
+    LParen,
+    RParen,
     EOF,
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
     pub kind: TokenKind,
     pub line: usize,
@@ -34,6 +36,10 @@ pub enum Expr {
         op: Op,
         right: Box<Expr>,
     },
+    UnOp {
+        op: Op,
+        val: Box<Expr>,
+    },
     Val(Lit),
 }
 
@@ -42,7 +48,7 @@ pub enum Lit {
     Num(isize),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Op {
     pub kind: OpKind,
     pub prec: usize,
@@ -53,4 +59,6 @@ pub enum OpKind {
     Mul,
     Sub,
     Div,
+    LParen,
+    RParen,
 }
