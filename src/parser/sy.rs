@@ -1,4 +1,4 @@
-use crate::tok_ast::{Error, Expr, Lit, Op, OpKind, Token, TokenKind};
+use super::tok_ast::{Error, Expr, Lit, Op, OpKind, Token, TokenKind};
 
 fn add_op(ast: &mut Vec<Expr>, op: Op) {
     match &op.kind {

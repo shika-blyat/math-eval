@@ -1,4 +1,4 @@
-use crate::tok_ast::{Error, ErrorReason, Op, OpKind, Token, TokenKind};
+use super::tok_ast::{Error, ErrorReason, Op, OpKind, Token, TokenKind};
 
 pub struct Lexer {
     chars: Vec<char>,
