@@ -78,6 +78,13 @@ impl Lexer {
                     }),
                     '/'.to_string(),
                 ),
+                'm' => self.new_token(
+                    TokenKind::Op(Op {
+                        kind: OpKind::USub,
+                        prec: 10,
+                    }),
+                    '-'.to_string(),
+                ),
                 '(' => self.new_token(TokenKind::LParen, '('.to_string()),
                 ')' => self.new_token(TokenKind::RParen, ')'.to_string()),
                 c => {

@@ -53,11 +53,13 @@ pub struct Op {
     pub kind: OpKind,
     pub prec: usize,
 }
-#[derive(Debug, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum OpKind {
     Add,
     Mul,
     Sub,
+    /// Unary substraction
+    USub,
     Div,
     LParen,
     RParen,
