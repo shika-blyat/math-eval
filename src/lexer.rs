@@ -81,7 +81,7 @@ impl Lexer {
                 'm' => self.new_token(
                     TokenKind::Op(Op {
                         kind: OpKind::USub,
-                        prec: 10,
+                        prec: 20,
                     }),
                     '-'.to_string(),
                 ),

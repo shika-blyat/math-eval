@@ -22,41 +22,51 @@ pub fn shunting_yard(tokens: Vec<Token>) -> Result<Expr, Error> {
     let mut op_stack: Vec<Op> = vec![];
     let mut ast: Vec<Expr> = vec![];
     let mut k = 0;
+    let mut last_was_op = true;
     'f: while k < tokens.len() {
         let tok = tokens[k].clone();
         match tok.kind {
-            TokenKind::Num(n) => ast.push(Expr::Val(Lit::Num(n))),
-            TokenKind::Op(op) => {
+            TokenKind::Num(n) => {
+                ast.push(Expr::Val(Lit::Num(n)));
+                last_was_op = false;
+            }
+            TokenKind::Op(mut op) => {
+                if last_was_op {
+                    op = Op {
+                        kind: OpKind::USub,
+                        prec: 20,
+                    }
+                }
                 while let Some(Op {
                     prec: last_prec,
-                    kind,
+                    kind: last_kind,
                 }) = op_stack.last()
                 {
-                    // A little hack
-                    if kind == &OpKind::USub {
-                        add_op(&mut ast, op_stack.pop().unwrap());
-                    } else if last_prec >= &op.prec && kind != &OpKind::LParen {
+                    if last_prec >= &op.prec && last_kind != &OpKind::LParen {
                         add_op(&mut ast, op_stack.pop().unwrap());
                     } else {
                         break;
                     }
                 }
                 op_stack.push(op);
+                last_was_op = true;
             }
-            TokenKind::LParen => op_stack.push(Op {
-                prec: 0,
-                kind: OpKind::LParen,
-            }),
+            TokenKind::LParen => {
+                last_was_op = true;
+                op_stack.push(Op {
+                    prec: 0,
+                    kind: OpKind::LParen,
+                })
+            }
             TokenKind::RParen => {
+                last_was_op = false;
                 while let Some(op) = op_stack.last() {
                     if let OpKind::LParen = op.kind {
                         op_stack.pop().unwrap();
                         k += 1;
                         continue 'f;
                     }
-                    println!("a");
                     add_op(&mut ast, op_stack.pop().unwrap());
-                    println!("b");
                 }
                 panic!("Something wrong happened, probably a mismatched parenthesis")
             }
